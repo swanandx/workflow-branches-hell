@@ -1,0 +1,49 @@
+on:
+  push:
+    branches:
+    - main
+    paths:
+    - "test-dir/**"
+
+jobs:
+  export:
+    name: obsidian export
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: install obsidian-export
+      run: |
+        curl -s "https://api.github.com/repos/zoni/obsidian-export/releases/latest" \
+        | jq -r '.assets[] \
+        | select(.browser_download_url \
+        | contains("installer.sh")) \
+        | .browser_download_url' \
+        | wget -qi -
+        chmod +x ./obsidian-export-installer.sh
+        ./obsidian-export-installer.sh
+
+    - name: checkout repo
+      uses: actions/checkout@v2.3.4
+    
+    - name: export the docs
+      run: |
+        mkdir tmp-output-docs
+        obsidian-export ./test-dir tmp-output-docs
+
+    - name: checkout to other branch
+      uses: actions/checkout@v4
+      with:
+        ref: prod
+
+    - name: commit
+      run: |
+        rm -rf docs
+        mv tmp-output-docs docs
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git add .
+        git commit -m "sync up the docs"
+        git push
+        
+      
+    
