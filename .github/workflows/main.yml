@@ -14,10 +14,7 @@ jobs:
     - name: install obsidian-export
       run: |
         curl -s "https://api.github.com/repos/zoni/obsidian-export/releases/latest" \
-        | jq -r '.assets[] \
-        | select(.browser_download_url \
-        | contains("installer.sh")) \
-        | .browser_download_url' \
+        | jq -r '.assets[] | select(.browser_download_url | contains("installer.sh")) | .browser_download_url' \
         | wget -qi -
         chmod +x ./obsidian-export-installer.sh
         ./obsidian-export-installer.sh
